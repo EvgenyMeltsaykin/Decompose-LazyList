@@ -1,6 +1,6 @@
 ## Decompose LazyList
 
-Using Decompose with compose LazyList
+Using [Decompose](https://github.com/arkivanov/Decompose) with compose LazyList
 
 Visual logic of the list item lifecycle
 
