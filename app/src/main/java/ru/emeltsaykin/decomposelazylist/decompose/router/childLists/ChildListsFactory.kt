@@ -1,6 +1,5 @@
 package ru.emeltsaykin.decomposelazylist.decompose.router.childLists
 
-import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.GenericComponentContext
 import com.arkivanov.decompose.router.children.ChildNavState
 import com.arkivanov.decompose.router.children.ChildNavState.Status
@@ -51,7 +50,7 @@ fun <Ctx : GenericComponentContext<Ctx>, C : Any, T : Any> Ctx.childLazyLists(
                     value = SerializableLazyLists(
                         items = lazyLists.items,
                         firstVisibleIndex = lazyLists.firstVisibleIndex,
-                        lastVisibleIndex = lazyLists.lastVisibleIndex
+                        lastVisibleIndex = lazyLists.lastVisibleIndex,
                     ),
                     strategy = SerializableLazyLists.serializer(serializer),
                 )
@@ -65,7 +64,7 @@ fun <Ctx : GenericComponentContext<Ctx>, C : Any, T : Any> Ctx.childLazyLists(
                 LazyLists(
                     items = lazyLists.items,
                     firstVisibleIndex = lazyLists.firstVisibleIndex,
-                    lastVisibleIndex = lazyLists.lastVisibleIndex
+                    lastVisibleIndex = lazyLists.lastVisibleIndex,
                 )
             } else {
                 null
@@ -139,12 +138,11 @@ fun <Ctx : GenericComponentContext<Ctx>, C : Any, T : Any> Ctx.childLazyLists(
             )
         },
         stateMapper = { state, children ->
-            @Suppress("UNCHECKED_CAST")
-            (ChildLazyLists(
-                items = children as List<Child.Created<C, T>>,
+            ChildLazyLists(
+                items = children,
                 firstVisibleIndex = state.items.firstVisibleIndex,
                 lastVisibleIndex = state.items.lastVisibleIndex,
-            ))
+            )
         },
         childFactory = childFactory,
     )
@@ -153,8 +151,9 @@ fun <Ctx : GenericComponentContext<Ctx>, C : Any, T : Any> Ctx.childLazyLists(
 internal fun getDefaultListItemStatus(index: Int, lists: LazyLists<*>): Status {
     return when (index) {
         in (lists.firstVisibleIndex..lists.lastVisibleIndex) -> Status.RESUMED
-        in (lists.firstVisibleIndex - 1..lists.lastVisibleIndex + 1) -> Status.STARTED
-        else -> Status.CREATED
+        in (lists.firstVisibleIndex - DefaultCreatedThreshold..lists.lastVisibleIndex + DefaultCreatedThreshold) -> Status.STARTED
+        in (lists.firstVisibleIndex - DefaultStartedThreshold..lists.lastVisibleIndex + DefaultStartedThreshold) -> Status.CREATED
+        else -> Status.DESTROYED
     }
 }
 
@@ -173,3 +172,6 @@ private data class LazyListNavState<out C : Any>(
         }
     }
 }
+
+private const val DefaultCreatedThreshold = 3
+private const val DefaultStartedThreshold = 1

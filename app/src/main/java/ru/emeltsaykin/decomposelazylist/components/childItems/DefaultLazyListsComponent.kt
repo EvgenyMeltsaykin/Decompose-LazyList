@@ -9,8 +9,7 @@ import ru.emeltsaykin.decomposelazylist.components.kitten.KittenComponent
 import ru.emeltsaykin.decomposelazylist.decompose.router.childLists.ChildLazyLists
 import ru.emeltsaykin.decomposelazylist.decompose.router.childLists.LazyListNavigation
 import ru.emeltsaykin.decomposelazylist.decompose.router.childLists.LazyLists
-import ru.emeltsaykin.decomposelazylist.decompose.router.childLists.changeFirstVisibleElementIndex
-import ru.emeltsaykin.decomposelazylist.decompose.router.childLists.changeLastVisibleElementIndex
+import ru.emeltsaykin.decomposelazylist.decompose.router.childLists.changeVisibleElementIndexes
 import ru.emeltsaykin.decomposelazylist.decompose.router.childLists.childLazyLists
 import ru.emeltsaykin.decomposelazylist.decompose.router.childLists.navigate
 
@@ -47,18 +46,14 @@ class DefaultLazyListsComponent(
 
     override val children: Value<ChildLazyLists<*, KittenComponent>> = _children
 
-    override fun onFirstVisibleElementChange(index: Int) {
-        listsNavigation.changeFirstVisibleElementIndex(index)
-    }
-
-    override fun onLastVisibleElementChange(index: Int) {
-        listsNavigation.changeLastVisibleElementIndex(index)
+    override fun onVisibleElementChange(firstVisibleIndex: Int, lastVisibleIndex: Int) {
+        listsNavigation.changeVisibleElementIndexes(firstIndex = firstVisibleIndex, lastIndex = lastVisibleIndex)
     }
 
     override fun onAddClick() {
         listsNavigation.navigate(
             transformer = {
-                it.copy(items = it.items + Config(imageResourceId = safeGetImageSource(it.items.size), it.items.size))
+                it.copy(items = it.items + Config(imageResourceId = safeGetImageSource(it.items.size), it.items.maxOf { item -> item.index } + 1))
             }
         )
     }

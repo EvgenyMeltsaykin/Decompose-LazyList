@@ -10,9 +10,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.value.Value
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import ru.emeltsaykin.decomposelazylist.decompose.router.childLists.ChildLazyLists
 
 /**
@@ -24,9 +25,8 @@ fun <C : Any, T : Any> ChildLazyLists(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState = rememberLazyListState(),
     lazyList: LazyList = defaultLazyColumn(),
-    onFirstIndexVisibleChanged: (index: Int) -> Unit,
-    onLastIndexVisibleChanged: (index: Int) -> Unit,
-    lazyListContent: LazyListScope.(items: List<Child.Created<C, T>>) -> Unit,
+    onIndexesVisibleChanged: (firstVisibleIndex: Int, lastVisibleIndex: Int) -> Unit,
+    lazyListContent: LazyListScope.(items: List<T?>) -> Unit,
 ) {
     val state by listItems.subscribeAsState()
 
@@ -34,8 +34,7 @@ fun <C : Any, T : Any> ChildLazyLists(
         modifier = modifier,
         listItems = state,
         lazyList = lazyList,
-        onFirstIndexVisibleChanged = onFirstIndexVisibleChanged,
-        onLastIndexVisibleChanged = onLastIndexVisibleChanged,
+        onIndexesVisibleChanged = onIndexesVisibleChanged,
         lazyListState = lazyListState,
         lazyListContent = lazyListContent,
     )
@@ -47,31 +46,31 @@ fun <C : Any, T : Any> ChildLazyLists(
 @Composable
 fun <C : Any, T : Any> ChildLazyLists(
     listItems: ChildLazyLists<C, T>,
-    onFirstIndexVisibleChanged: (index: Int) -> Unit,
-    onLastIndexVisibleChanged: (index: Int) -> Unit,
+    onIndexesVisibleChanged: (firstVisibleIndex: Int, lastVisibleIndex: Int) -> Unit,
     modifier: Modifier = Modifier,
     lazyList: LazyList = defaultLazyColumn(),
     lazyListState: LazyListState = rememberLazyListState(),
-    lazyListContent: LazyListScope.(items: List<Child.Created<C, T>>) -> Unit,
+    lazyListContent: LazyListScope.(items: List<T?>) -> Unit,
 ) {
-    LaunchedEffect(lazyListState) {
-        snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
-            .collect {
-                onLastIndexVisibleChanged(it ?: 0)
-            }
+
+    LaunchedEffect(
+        lazyListState
+    ) {
+        combine(
+            snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index },
+            snapshotFlow { lazyListState.firstVisibleItemIndex }
+        ) { lastIndex, firstIndex ->
+            (lastIndex ?: 0) to firstIndex
+        }.collectLatest { (lastIndex, firstIndex) ->
+            onIndexesVisibleChanged(firstIndex, lastIndex)
+        }
     }
 
-    LaunchedEffect(lazyListState) {
-        snapshotFlow { lazyListState.firstVisibleItemIndex }
-            .collect {
-                onFirstIndexVisibleChanged(it)
-            }
-    }
     lazyList(
         modifier,
         lazyListState,
     ) {
-        lazyListContent(listItems.items)
+        lazyListContent(listItems.items.map { it.instance })
     }
 }
 

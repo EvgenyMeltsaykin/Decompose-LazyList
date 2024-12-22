@@ -28,6 +28,7 @@ import ru.emeltsaykin.decomposelazylist.painterResource
 internal fun KittenContent(
     component: KittenComponent,
     textStyle: TextStyle,
+    index: Int,
     modifier: Modifier = Modifier,
 ) {
     val model by component.model.subscribeAsState()
@@ -48,6 +49,15 @@ internal fun KittenContent(
                     .fillMaxWidth()
                     .background(Brush.verticalGradient(colors = listOf(Color.Black.copy(alpha = 0.75F), Color.Transparent)))
                     .statusBarsPadding()
+                    .padding(top = 16.dp, bottom = 24.dp),
+                style = textStyle,
+                textAlign = TextAlign.Center,
+            )
+
+            Text(
+                text = index.toString(),
+                modifier = Modifier
+                    .align(Alignment.TopStart)
                     .padding(top = 16.dp, bottom = 24.dp),
                 style = textStyle,
                 textAlign = TextAlign.Center,

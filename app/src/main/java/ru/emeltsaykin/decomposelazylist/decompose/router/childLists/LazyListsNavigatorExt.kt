@@ -8,6 +8,29 @@ fun <C : Any> LazyListsNavigator<C>.navigate(transformer: (LazyLists<C>) -> Lazy
 }
 
 /**
+ * Changes the index of the first visible element and last visible element
+ *
+ * @param firstIndex index of the first visible element
+ * @param lastIndex index of the last visible element
+ * @param onComplete called when the navigation is finished (either synchronously or asynchronously).
+ */
+fun <C : Any> LazyListsNavigator<C>.changeVisibleElementIndexes(
+    firstIndex: Int,
+    lastIndex: Int,
+    onComplete: (newLazyLists: LazyLists<C>, oldLazyLists: LazyLists<C>) -> Unit = { _, _ -> },
+) {
+    navigate(
+        transformer = { lazyLists ->
+            lazyLists.copy(
+                firstVisibleIndex = firstIndex,
+                lastVisibleIndex = lastIndex,
+            )
+        },
+        onComplete = onComplete,
+    )
+}
+
+/**
  * Changes the index of the first visible element
  *
  * @param index index of the first visible element
@@ -39,6 +62,7 @@ fun <C : Any> LazyListsNavigator<C>.changeLastVisibleElementIndex(
 ) {
     navigate(
         transformer = { lazyLists ->
+
             lazyLists.copy(
                 lastVisibleIndex = index
             )

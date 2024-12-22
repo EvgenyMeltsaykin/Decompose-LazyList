@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,15 +28,19 @@ fun ChildItemsComponent(
         ChildLazyLists(
             modifier = Modifier.weight(1f),
             listItems = component.children,
-            onFirstIndexVisibleChanged = component::onFirstVisibleElementChange,
-            onLastIndexVisibleChanged = component::onLastVisibleElementChange,
+            onIndexesVisibleChanged = component::onVisibleElementChange
         ) { childItems ->
-            items(childItems) {
-                KittenContent(
-                    modifier = modifier.fillMaxWidth(),
-                    component = it.instance,
-                    textStyle = TextStyle.Default
-                )
+            itemsIndexed(childItems) { index, child ->
+                if (child != null) {
+                    KittenContent(
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        component = child,
+                        index = index,
+                        textStyle = TextStyle.Default
+                    )
+                }
             }
         }
         Row(

@@ -8,8 +8,7 @@ interface LazyListsComponent {
 
     val children: Value<ChildLazyLists<*, KittenComponent>>
 
-    fun onFirstVisibleElementChange(index: Int)
-    fun onLastVisibleElementChange(index: Int)
+    fun onVisibleElementChange(firstVisibleIndex: Int, lastVisibleIndex: Int)
     fun onAddClick()
     fun onDeleteClick()
     fun onShuffleClick()

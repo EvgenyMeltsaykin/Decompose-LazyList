@@ -10,12 +10,12 @@ import com.arkivanov.decompose.Child
  * @param lastVisibleIndex an index of the last visible item in the list. Must be greater than [firstVisibleIndex]
  */
 data class ChildLazyLists<out C : Any, out T : Any> internal constructor(
-    val items: List<Child.Created<C, T>>,
+    val items: List<Child<C, T>>,
     val firstVisibleIndex: Int,
     val lastVisibleIndex: Int,
 ) {
 
-    constructor(items: List<Child.Created<C, T>>) : this(items = items, firstVisibleIndex = 0, lastVisibleIndex = 0)
+    constructor(items: List<Child<C, T>>) : this(items = items, firstVisibleIndex = 0, lastVisibleIndex = 0)
 
     /**
      * Creates empty [ChildLazyLists].
