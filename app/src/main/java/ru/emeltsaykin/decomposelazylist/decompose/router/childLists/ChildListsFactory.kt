@@ -1,6 +1,5 @@
 package ru.emeltsaykin.decomposelazylist.decompose.router.childLists
 
-import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.GenericComponentContext
 import com.arkivanov.decompose.router.children.ChildNavState
 import com.arkivanov.decompose.router.children.ChildNavState.Status
@@ -139,22 +138,29 @@ fun <Ctx : GenericComponentContext<Ctx>, C : Any, T : Any> Ctx.childLazyLists(
             )
         },
         stateMapper = { state, children ->
-            @Suppress("UNCHECKED_CAST")
-            (ChildLazyLists(
-                items = children as List<Child.Created<C, T>>,
+            ChildLazyLists(
+                items = children,
                 firstVisibleIndex = state.items.firstVisibleIndex,
                 lastVisibleIndex = state.items.lastVisibleIndex,
-            ))
+            )
         },
         childFactory = childFactory,
     )
 
 @PublishedApi
 internal fun getDefaultListItemStatus(index: Int, lists: LazyLists<*>): Status {
+    val (firstVisibleIndex, lastVisibleIndex) = if (lists.firstVisibleIndex < lists.lastVisibleIndex) {
+        lists.firstVisibleIndex to lists.lastVisibleIndex
+    } else {
+        lists.lastVisibleIndex to lists.firstVisibleIndex
+    }
+    if (lastVisibleIndex == -1 && firstVisibleIndex == -1 && index == 0) return Status.CREATED
+    if (lastVisibleIndex == -1 && firstVisibleIndex == -1) return Status.DESTROYED
     return when (index) {
-        in (lists.firstVisibleIndex..lists.lastVisibleIndex) -> Status.RESUMED
-        in (lists.firstVisibleIndex - 1..lists.lastVisibleIndex + 1) -> Status.STARTED
-        else -> Status.CREATED
+        in (firstVisibleIndex..lastVisibleIndex) -> Status.RESUMED
+        in (firstVisibleIndex - DefaultStartedThreshold..lastVisibleIndex + DefaultStartedThreshold) -> Status.STARTED
+        in (firstVisibleIndex - DefaultCreatedThreshold..lastVisibleIndex + DefaultCreatedThreshold) -> Status.CREATED
+        else -> Status.DESTROYED
     }
 }
 
@@ -173,3 +179,6 @@ private data class LazyListNavState<out C : Any>(
         }
     }
 }
+
+private const val DefaultCreatedThreshold = 3
+private const val DefaultStartedThreshold = 1

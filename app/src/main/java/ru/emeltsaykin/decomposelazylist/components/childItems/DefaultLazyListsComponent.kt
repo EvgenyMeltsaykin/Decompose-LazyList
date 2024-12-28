@@ -58,7 +58,7 @@ class DefaultLazyListsComponent(
     override fun onAddClick() {
         listsNavigation.navigate(
             transformer = {
-                it.copy(items = it.items + Config(imageResourceId = safeGetImageSource(it.items.size), it.items.size))
+                it.copy(items = it.items + Config(imageResourceId = safeGetImageSource(it.items.size), it.items.maxOf { it.index } + 1))
             }
         )
     }
