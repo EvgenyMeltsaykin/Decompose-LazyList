@@ -1,6 +1,5 @@
 package ru.emeltsaykin.decomposelazylist.lazyLists
 
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -12,6 +11,7 @@ import com.arkivanov.decompose.Child
 import org.junit.Rule
 import org.junit.Test
 import ru.emeltsaykin.decomposelazylist.decompose.extensions.compose.childItems.ChildLazyLists
+import ru.emeltsaykin.decomposelazylist.decompose.extensions.compose.childItems.childLazyItemsIndexed
 import ru.emeltsaykin.decomposelazylist.decompose.router.childLists.ChildLazyLists
 
 @Suppress("TestFunctionName")
@@ -73,6 +73,33 @@ class ChildLazyListsTest {
         composeRule.onNodeWithText(text = "ListItem1", substring = true).assertDoesNotExist()
     }
 
+    @Test
+    fun GIVEN_lazy_list_items_displayed_WHEN_destroyed_all_items_THEN_all_items_not_exists() {
+        val state = mutableStateOf(
+            ChildLazyLists<Config, Config>(
+                items = listOf(
+                    Child.Created(Config.Config1, Config.Config1),
+                    Child.Created(Config.Config2, Config.Config2),
+                )
+            ),
+        )
+
+        setContent(state)
+        composeRule.onNodeWithText(text = "ListItem0", substring = true).assertExists()
+        composeRule.onNodeWithText(text = "ListItem1", substring = true).assertExists()
+
+        state.updateOnIdle {
+            ChildLazyLists(
+                items = listOf(
+                    Child.Destroyed(Config.Config1),
+                    Child.Destroyed(Config.Config2),
+                ),
+            )
+        }
+        composeRule.onNodeWithText(text = "ListItem0", substring = true).assertDoesNotExist()
+        composeRule.onNodeWithText(text = "ListItem1", substring = true).assertDoesNotExist()
+    }
+
     private fun setContent(
         lazyLists: State<ChildLazyLists<Config, Config>>,
     ) {
@@ -82,8 +109,8 @@ class ChildLazyListsTest {
                 onFirstIndexVisibleChanged = {},
                 onLastIndexVisibleChanged = {},
             ) {
-                itemsIndexed(it) { index, item ->
-                    ListItem(index = index, listItem = item.instance)
+                childLazyItemsIndexed(it) { index, item ->
+                    ListItem(index = index, listItem = item)
                 }
             }
         }

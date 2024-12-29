@@ -117,7 +117,9 @@ internal typealias LazyList =
         content: LazyListScope.() -> Unit,
     ) -> Unit
 
-
+/**
+ * Function for proper control of Child lifecycle. Allows to use Child with other items LazyList
+ */
 fun <C : Any, T : Any> LazyListScope.childLazyItems(
     items: List<Child<C, T>>,
     key: ((Child<C, T>) -> Any)? = null,
@@ -133,6 +135,9 @@ fun <C : Any, T : Any> LazyListScope.childLazyItems(
     }
 }
 
+/**
+ * Function for proper control of Child lifecycle. Allows to use Child with other items LazyList
+ */
 fun <C : Any, T : Any> LazyListScope.childLazyItemsIndexed(
     items: List<Child<C, T>>,
     key: ((Child<C, T>) -> Any)? = null,

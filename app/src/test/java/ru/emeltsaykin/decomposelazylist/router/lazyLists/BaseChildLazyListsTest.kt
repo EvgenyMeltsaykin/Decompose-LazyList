@@ -21,33 +21,34 @@ abstract class BaseChildLazyListsTest {
     protected fun ComponentContext.childLazyLists(
         initialPages: LazyLists<Int> = LazyLists(),
         persistent: Boolean = true,
-    ): Value<ChildLazyLists<Int, Component>> =
-        childLazyLists(
-            source = navigation,
-            serializer = Int.serializer().takeIf { persistent },
-            initialLazyLists = { initialPages },
-            childFactory = BaseChildLazyListsTest::Component,
-        )
+    ): Value<ChildLazyLists<Int, Component>> = childLazyLists(
+        source = navigation,
+        serializer = Int.serializer().takeIf { persistent },
+        initialLazyLists = { initialPages },
+        childFactory = BaseChildLazyListsTest::Component,
+    )
 
-    protected fun ChildLazyLists<Int, Component>.assertLazyLists() {
-        items.forEachIndexed { index, item ->
-            when (index) {
-                in (firstVisibleIndex..lastVisibleIndex) -> {
-                    assertIs<Child.Created<Int, Component>>(item)
-                    assertEquals(Lifecycle.State.RESUMED, item.instance.lifecycle.state)
-                }
+    protected fun ChildLazyLists<Int, Component>.assertCreatedLifecycle(index: Int) {
+        val item = this.items[index]
+        assertIs<Child.Created<Int, Component>>(item)
+        assertEquals(Lifecycle.State.CREATED, item.instance.lifecycle.state)
+    }
 
-                in (firstVisibleIndex - 1..lastVisibleIndex + 1) -> {
-                    assertIs<Child.Created<Int, Component>>(item)
-                    assertEquals(Lifecycle.State.STARTED, item.instance.lifecycle.state)
-                }
+    protected fun ChildLazyLists<Int, Component>.assertResumedLifecycle(index: Int) {
+        val item = this.items[index]
+        assertIs<Child.Created<Int, Component>>(item)
+        assertEquals(Lifecycle.State.RESUMED, item.instance.lifecycle.state)
+    }
 
-                else -> {
-                    assertIs<Child.Created<Int, Component>>(item)
-                    assertEquals(Lifecycle.State.CREATED, item.instance.lifecycle.state)
-                }
-            }
-        }
+    protected fun ChildLazyLists<Int, Component>.assertStartedLifecycle(index: Int) {
+        val item = this.items[index]
+        assertIs<Child.Created<Int, Component>>(item)
+        assertEquals(Lifecycle.State.STARTED, item.instance.lifecycle.state)
+    }
+
+    protected fun ChildLazyLists<Int, Component>.assertDestroyedLifecycle(index: Int) {
+        val item = this.items[index]
+        assertIs<Child.Destroyed<Int>>(item)
     }
 
     protected fun ChildLazyLists<Int, Component>.assertLazyListsEmpty() {

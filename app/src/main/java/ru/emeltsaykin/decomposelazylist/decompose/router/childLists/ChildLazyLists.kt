@@ -6,8 +6,8 @@ import com.arkivanov.decompose.Child
  * A state holder for Child Lazy Lists.
  *
  * @param items a list of child components.
- * @param firstVisibleIndex an index of the first visible item in the list.
- * @param lastVisibleIndex an index of the last visible item in the list.
+ * @param firstVisibleIndex an index of the first visible item in the list. -1 if there is no first visible element
+ * @param lastVisibleIndex an index of the last visible item in the list. -1 if there is no last visible element
  */
 data class ChildLazyLists<out C : Any, out T : Any> internal constructor(
     val items: List<Child<C, T>>,

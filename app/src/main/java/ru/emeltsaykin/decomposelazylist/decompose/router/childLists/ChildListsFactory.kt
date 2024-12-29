@@ -99,10 +99,12 @@ private class SerializableLazyLists<out C : Any>(
  * The restored [LazyLists] state must have the same amount of configurations and in the same order.
  * @param key a key of the navigation, must be unique if there are multiple Child Lazy Lists used in
  * the same component.
- * @param listItemStatus a function that returns the [Status] of the page at the specified index.
- * By default, the index of the element between the first visible element inclusive and the last visible element inclusive
- * is [Status.RESUMED], the element before the first visible and after the last visible
- * is [Status.STARTED], and the rest are [Status.CREATED]. You can implement your own logic
+ * @param listItemStatus is a function that returns the [Status] of the page at the specified index.
+ * By default, the index of an item between the first visible item inclusive and the last visible item inclusive
+ * is [Status.RESUMED], the item before the first visible item and after the last visible item
+ * is [Status.STARTED], the two items after [Status.STARTED] have the status [Status.CREATED],
+ * and the rest have the status [Status.DESTROYED]. If no element is visible, the first element in the list will be in the [Status.CREATED] status.
+ * You can implement your own logic
  * @param childFactory a factory function that creates new child instances.
  * @return an observable [Value] of [ChildLazyLists].
  */
@@ -154,7 +156,11 @@ internal fun getDefaultListItemStatus(index: Int, lists: LazyLists<*>): Status {
     } else {
         lists.lastVisibleIndex to lists.firstVisibleIndex
     }
-    if (lastVisibleIndex == -1 && firstVisibleIndex == -1 && index == 0) return Status.CREATED
+
+    if (lastVisibleIndex == -1 && firstVisibleIndex == -1 && index == 0) {
+        // This is necessary so that when scrolling LazyList the scrolling does not stop
+        return Status.CREATED
+    }
     if (lastVisibleIndex == -1 && firstVisibleIndex == -1) return Status.DESTROYED
     return when (index) {
         in (firstVisibleIndex..lastVisibleIndex) -> Status.RESUMED
