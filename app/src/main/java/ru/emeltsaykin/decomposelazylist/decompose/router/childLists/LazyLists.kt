@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
  * Represents a state of Child Lazy Lists navigation model.
  *
  * @param items a list of child configurations, must be unique, can be empty.
- * @param firstVisibleIndex an index of the first visible item in the list.
- * @param lastVisibleIndex an index of the last visible item in the list. Must be greater than [firstVisibleIndex]
+ * @param firstVisibleIndex an index of the first visible item in the list. -1 if there is no first visible element
+ * @param lastVisibleIndex an index of the last visible item in the list. -1 if there is no last visible element
  */
 @Serializable
 data class LazyLists<out C : Any> internal constructor(
@@ -16,16 +16,10 @@ data class LazyLists<out C : Any> internal constructor(
     val lastVisibleIndex: Int,
 ) {
 
-    constructor(items: List<C>) : this(items = items, firstVisibleIndex = 0, lastVisibleIndex = 0)
+    constructor(items: List<C>) : this(items = items, firstVisibleIndex = -1, lastVisibleIndex = -1)
 
     /**
      * Creates empty [ChildLazyLists].
      */
-    constructor() : this(items = emptyList(), firstVisibleIndex = 0, lastVisibleIndex = 0)
-
-    init {
-        require(lastVisibleIndex >= firstVisibleIndex) {
-            "The lastVisibleIndex argument must be greater than firstVisibleIndex: $firstVisibleIndex. Actual: $lastVisibleIndex."
-        }
-    }
+    constructor() : this(items = emptyList(), firstVisibleIndex = -1, lastVisibleIndex = -1)
 }

@@ -1,6 +1,5 @@
 package ru.emeltsaykin.decomposelazylist.decompose.router.childLists
 
-import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.GenericComponentContext
 import com.arkivanov.decompose.router.children.ChildNavState
 import com.arkivanov.decompose.router.children.ChildNavState.Status
@@ -100,10 +99,12 @@ private class SerializableLazyLists<out C : Any>(
  * The restored [LazyLists] state must have the same amount of configurations and in the same order.
  * @param key a key of the navigation, must be unique if there are multiple Child Lazy Lists used in
  * the same component.
- * @param listItemStatus a function that returns the [Status] of the page at the specified index.
- * By default, the index of the element between the first visible element inclusive and the last visible element inclusive
- * is [Status.RESUMED], the element before the first visible and after the last visible
- * is [Status.STARTED], and the rest are [Status.CREATED]. You can implement your own logic
+ * @param listItemStatus is a function that returns the [Status] of the page at the specified index.
+ * By default, the index of an item between the first visible item inclusive and the last visible item inclusive
+ * is [Status.RESUMED], the item before the first visible item and after the last visible item
+ * is [Status.STARTED], the two items after [Status.STARTED] have the status [Status.CREATED],
+ * and the rest have the status [Status.DESTROYED]. If no element is visible, the first element in the list will be in the [Status.CREATED] status.
+ * You can implement your own logic
  * @param childFactory a factory function that creates new child instances.
  * @return an observable [Value] of [ChildLazyLists].
  */
@@ -139,22 +140,33 @@ fun <Ctx : GenericComponentContext<Ctx>, C : Any, T : Any> Ctx.childLazyLists(
             )
         },
         stateMapper = { state, children ->
-            @Suppress("UNCHECKED_CAST")
-            (ChildLazyLists(
-                items = children as List<Child.Created<C, T>>,
+            ChildLazyLists(
+                items = children,
                 firstVisibleIndex = state.items.firstVisibleIndex,
                 lastVisibleIndex = state.items.lastVisibleIndex,
-            ))
+            )
         },
         childFactory = childFactory,
     )
 
 @PublishedApi
 internal fun getDefaultListItemStatus(index: Int, lists: LazyLists<*>): Status {
+    val (firstVisibleIndex, lastVisibleIndex) = if (lists.firstVisibleIndex < lists.lastVisibleIndex) {
+        lists.firstVisibleIndex to lists.lastVisibleIndex
+    } else {
+        lists.lastVisibleIndex to lists.firstVisibleIndex
+    }
+
+    if (lastVisibleIndex == -1 && firstVisibleIndex == -1 && index == 0) {
+        // This is necessary so that when scrolling LazyList the scrolling does not stop
+        return Status.CREATED
+    }
+    if (lastVisibleIndex == -1 && firstVisibleIndex == -1) return Status.DESTROYED
     return when (index) {
-        in (lists.firstVisibleIndex..lists.lastVisibleIndex) -> Status.RESUMED
-        in (lists.firstVisibleIndex - 1..lists.lastVisibleIndex + 1) -> Status.STARTED
-        else -> Status.CREATED
+        in (firstVisibleIndex..lastVisibleIndex) -> Status.RESUMED
+        in (firstVisibleIndex - DefaultStartedThreshold..lastVisibleIndex + DefaultStartedThreshold) -> Status.STARTED
+        in (firstVisibleIndex - DefaultCreatedThreshold..lastVisibleIndex + DefaultCreatedThreshold) -> Status.CREATED
+        else -> Status.DESTROYED
     }
 }
 
@@ -173,3 +185,6 @@ private data class LazyListNavState<out C : Any>(
         }
     }
 }
+
+private const val DefaultCreatedThreshold = 3
+private const val DefaultStartedThreshold = 1

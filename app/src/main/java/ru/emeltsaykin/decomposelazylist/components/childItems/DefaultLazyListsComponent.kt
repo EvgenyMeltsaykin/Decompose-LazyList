@@ -25,7 +25,7 @@ class DefaultLazyListsComponent(
             serializer = Config.serializer(),
             initialLazyLists = {
                 val configs = buildList {
-                    repeat(12) {
+                    repeat(40) {
                         add(Config(imageResourceId = safeGetImageSource(it), index = it))
                     }
                 }
@@ -58,7 +58,7 @@ class DefaultLazyListsComponent(
     override fun onAddClick() {
         listsNavigation.navigate(
             transformer = {
-                it.copy(items = it.items + Config(imageResourceId = safeGetImageSource(it.items.size), it.items.size))
+                it.copy(items = it.items + Config(imageResourceId = safeGetImageSource(it.items.size), (it.items.maxOfOrNull { it.index } ?: 0) + 1))
             }
         )
     }
