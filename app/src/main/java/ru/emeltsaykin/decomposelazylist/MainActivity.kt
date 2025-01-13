@@ -15,15 +15,16 @@ import ru.emeltsaykin.decomposelazylist.ui.theme.DecomposeLazyListTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val rootComponent = DefaultLazyListsComponent(
+            componentContext = defaultComponentContext()
+        )
         setContent {
             DecomposeLazyListTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    ChildItemsComponent(
-                        component = DefaultLazyListsComponent(
-                            componentContext = defaultComponentContext()
-                        )
-                    )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    ChildItemsComponent(component = rootComponent)
                 }
             }
         }
